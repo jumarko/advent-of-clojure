@@ -12,3 +12,8 @@
   (testing "Quiz path"
     (is (= 273
            (sut/block-distance sut/steps-1)))))
+
+(deftest headquarter-distance
+  (testing "shortest path to headquarter"
+    (is (= 4
+           (sut/headquarter-distance ["R8" "R4" "R4" "R8"])))))
