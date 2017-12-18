@@ -71,6 +71,7 @@
 
 (def input (read-input "src/advent_of_clojure/2017/01_input.txt"))
 
+;;; PART I:
 (defn sum-of-repeated-digits
   "Returns the sum of all digits as required for this task."
   [digits]
@@ -80,5 +81,39 @@
        (map first)
        (apply +)))
 
+(sum-of-repeated-digits [1 1 2 2])
+
 (sum-of-repeated-digits input)
 ;;=> 1131
+
+
+;;; PART II:
+(defn- circular-nth [digits-vector index]
+  (nth digits-vector (mod index (count digits-vector))))
+
+(defn sum-of-repeated-digits-2
+  "Returns the sum of all digits as required for this task."
+  [digits]
+  (let [halfway-next (/ (count digits) 2)]
+    (->> (vec digits)
+         (map-indexed (fn [idx digit]
+                        [digit
+                         (circular-nth digits (+ idx halfway-next))]))
+         (filter (fn [[digit next-digit]] (= digit next-digit)))
+         (map first)
+         (apply +))))
+
+
+(sum-of-repeated-digits-2 [1 2 1 2])
+;;=> 6
+(sum-of-repeated-digits-2 [1 2 2 1])
+;;=> 0
+(sum-of-repeated-digits-2 [1 2 3 4 2 5])
+;;=> 4
+(sum-of-repeated-digits-2 [1 2 3 1 2 3])
+;;=> 12
+(sum-of-repeated-digits-2 [1 2 1 3 1 4 1 5])
+;;=> 4
+
+(sum-of-repeated-digits-2 input)
+;;=> 1092
