@@ -71,37 +71,42 @@
 
 (def input (read-input "src/advent_of_clojure/2017/01_input.txt"))
 
-;;; PART I:
-(defn sum-of-repeated-digits
-  "Returns the sum of all digits as required for this task."
-  [digits]
-  (->> (concat digits (take 1 digits))
-       (partition-all 2 1)
+;;; generic solution
+(defn generic-sum
+  [digits paired-digits]
+  (->> (map vector digits paired-digits)
        (filter (fn [[digit next-digit]] (= digit next-digit)))
        (map first)
        (apply +)))
 
+;;; PART I:
+(defn sum-of-repeated-digits
+  "Returns the sum of all digits as required for this task."
+  [digits]
+  (let [queue (into (clojure.lang.PersistentQueue/EMPTY) digits)]
+    (generic-sum queue
+                 (conj (pop queue) (peek queue)))))
+
 (sum-of-repeated-digits [1 1 2 2])
 
 (sum-of-repeated-digits input)
-;;=> 1131
+;;=> 1136
 
 
 ;;; PART II:
 (defn- circular-nth [digits-vector index]
   (nth digits-vector (mod index (count digits-vector))))
 
+;; see https://stackoverflow.com/questions/20805978/circularly-shifting-nested-vectors
+;; for shifting vectors
 (defn sum-of-repeated-digits-2
   "Returns the sum of all digits as required for this task."
   [digits]
-  (let [halfway-next (/ (count digits) 2)]
-    (->> (vec digits)
-         (map-indexed (fn [idx digit]
-                        [digit
-                         (circular-nth digits (+ idx halfway-next))]))
-         (filter (fn [[digit next-digit]] (= digit next-digit)))
-         (map first)
-         (apply +))))
+  (let [digits-vector (vec digits)
+        halfway-next (/ (count digits) 2)
+        digits-shifted-halfway (vec (concat (subvec digits-vector halfway-next)
+                                            (subvec digits-vector 0 halfway-next)))]
+    (generic-sum digits digits-shifted-halfway)))
 
 
 (sum-of-repeated-digits-2 [1 2 1 2])
