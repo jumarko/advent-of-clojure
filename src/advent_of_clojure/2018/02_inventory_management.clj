@@ -11,9 +11,10 @@
 ;;; Simply scan find number of boxes with an ID containing any of letters repeating twice;
 ;;; then find number of boxes with an ID containing any of letters repeating three times;
 ;;; then multiply these two numbers together
+;;; ---------------------------------------------------------------------------------------
 
 (defn checksum [ids]
-  (let [ids-freqs (map #(-> % frequencies vals set) ids)
+  (let [ids-freqs (map #(-> % frequencies vals set) ids) ;; e.g. '(#{1} #{1 3 2} #{1 2} #{1 3} #{1 2} #{1 2} #{3})
         count-freqs (fn [desired-freq] (count (filter #(contains? % desired-freq) ids-freqs)))
         twos-count (count-freqs 2)
         threes-count (count-freqs 3)]
@@ -29,7 +30,64 @@
     (is (= 4920 (puzzle1)))))
 
 
+;;; Puzzle 2: 
+;;; --------
+(defn common-chars
+  "Returns a string representing all characters that are the same and at the same position.
+  Same characters at different positions don't count!"
+  [w1 w2]
+  (let [char-or-nil (map (fn [ch1 ch2]
+                           (when (= ch1 ch2)
+                             ch1))
+                         w1
+                         w2)]
+    (->> char-or-nil
+        (remove nil?)
+        (apply str))))
+
+(defn matching-ids
+  "For given ID find all other ids that 'match it' - that means they differe in exactly one character."
+  [id other-ids]
+  (first (filter (fn [id2] (and (= (count id) (count id2))
+                                (= (dec (count id)) (count (common-chars id id2)))))
+                 other-ids
+                 )))
+
+(defn off-by-one-ids
+  "Finds all "
+  [ids]
+  (map (fn [id] (first (filter matching-ids
+                               ;; don't include original ID
+                               (disj (set ids) id
+                                     (remove empty?)))))
+       ids))
+       
+
+(defn common-chars-for-correct-ids
+  "Finds common characters for 'matching ids in given collection.
+  It's assumed that there are only two such IDs - otherwise `common=chars` call throws an exception."
+  [ids]
+  (->> ids
+       off-by-one-ids
+       (apply common-chars)))
+
+(defn puzzle2 []
+  (io/with-input "02_input.txt" common-chars-for-correct-ids))
+
+(deftest puzzle2-test
+  (testing "Simple test"
+    (is (= #{"fghij" "fguij"}
+           (set (off-by-one-ids ["abcde" "fghij" "klmno" "pqrst" "fguij" "axcye" "wvxyz"])))))
+  (testing "Simple test - check common letters"
+    (is (= "fgij"
+           (apply common-chars (off-by-one-ids ["abcde" "fghij" "klmno" "pqrst" "fguij" "axcye" "wvxyz"])))
+        (testing "Real input"
+          (is (= "fonbwmjquwtapeyzikghtvdxl" (puzzle2)))))))
+
+
+
 ;;; Journal:
+;;; ===============================================================================
 (comment
 
   ;; let's start with frequencies
@@ -82,5 +140,24 @@
 
        threes-count))
 
+  ;;; Puzzle 2
+  ;; first create a skeleton + simple implementation
+  (defn off-by-one-ids [ids]
+    )
+  (defn common-chars [w1 w2]
+    (apply str (filter (set w1) w2)))
+  (common-chars "fghij" "fguij")
+
+  ;; continue to find candidates.
+  (let [ids ["abcde" "fghij" "klmno" "pqrst" "fguij" "axcye" "wvxyz"]]
+    (->> ids
+         (map (fn [id]
+                (first (filter (fn [id2] (and (= (count id) (count id2))
+                                              (= (dec (count id)) (count (common-chars id id2)))))
+                               (disj (set ids) id)))))
+         (remove empty?)))
+
 
   )
+
+
