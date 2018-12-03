@@ -43,30 +43,17 @@
 ;;;   2. I could loop and store frequencies computed so far in the set and quickly check
 ;;;      if new frequency is already there or not.
 ;;;      The input list can be easily repeated with `cycle`
-
+;;;   3. Use `reductions` (it does return lazy seq!)
 
 (defn- first-repeating-frequency [numbers]
-  (let [max-iterations 1000000]
-    (loop [freqs #{0}
-           prev-freq 0
-           nums (cycle numbers)
-           iteration 0]
-      (let [current-freq (+ prev-freq (first nums))]
-        (cond
-          (> iteration max-iterations)
-          (throw (IllegalArgumentException.
-                  (format "It's not possible to satisfy the input in %d iterations!" max-iterations)))
-
-          (contains? freqs current-freq)
-          ;; this is the first repeating frequency
-          current-freq
-
-          :else
-          (recur
-           (conj freqs current-freq)
-           current-freq
-           (rest nums)
-           (inc iteration)))))))
+  (reduce
+   (fn [[freqs prev-freq] num]
+     (let [new-freq (+ prev-freq num)]
+       (if (contains? freqs new-freq)
+         (reduced new-freq)
+         [(conj freqs new-freq) new-freq])))
+   [#{0} 0]
+   (cycle numbers)))
 
 (defn puzzle2 [input-reader]
   (let [numbers (number-seq input-reader)]
@@ -87,5 +74,5 @@
     (is (= 14 (first-repeating-frequency [7 7 -2 -7 -4])))
     )
   (testing "real input"
-    (is (= 484
+    (is (= 367
            (puzzle2-main)))))
