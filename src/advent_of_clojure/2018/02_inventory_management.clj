@@ -11,7 +11,7 @@
 ;;; Simply scan find number of boxes with an ID containing any of letters repeating twice;
 ;;; then find number of boxes with an ID containing any of letters repeating three times;
 ;;; then multiply these two numbers together
-;;; ---------------------------------------------------------------------------------------
+
 
 (defn checksum [ids]
   (let [ids-freqs (map #(-> % frequencies vals set) ids) ;; e.g. '(#{1} #{1 3 2} #{1 2} #{1 3} #{1 2} #{1 2} #{3})
@@ -56,11 +56,11 @@
 (defn off-by-one-ids
   "Finds all "
   [ids]
-  (map (fn [id] (first (filter matching-ids
-                               ;; don't include original ID
-                               (disj (set ids) id
-                                     (remove empty?)))))
-       ids))
+  (->> ids
+       (map (fn [id]
+              (let [other-ids (disj (set ids) id)]
+                (matching-ids id other-ids))))
+       (remove empty?)))
        
 
 (defn common-chars-for-correct-ids
@@ -82,7 +82,7 @@
     (is (= "fgij"
            (apply common-chars (off-by-one-ids ["abcde" "fghij" "klmno" "pqrst" "fguij" "axcye" "wvxyz"])))
         (testing "Real input"
-          (is (= "fonbwmjquwtapeyzikghtvdxl" (puzzle2)))))))
+          (is (= "fonbwmjquwtapeyzikghtvdxl" (time (puzzle2))))))))
 
 
 
