@@ -1,7 +1,7 @@
 (ns advent-of-clojure.2018.01
   "https://adventofcode.com/2018/day/1"
-  (:require [clojure.java.io :as io]
-            [clojure.test :refer [deftest testing is]]))
+  (:require [advent-of-clojure.2018.input :as io]
+            [clojure.test :refer [deftest is testing]]))
 
 ;;;; Time travelling device and frequency changes
 ;;;; input: https://adventofcode.com/2018/day/1/input
@@ -9,31 +9,20 @@
 
 ;;; Puzzle 1
 ;;; Sum up frequencies from the input file
-(defn- to-numbers [lines]
-  (map #(Integer/parseInt %) lines))
+(defn- to-number [line]
+  (Integer/parseInt line))
 
 (defn- sum-frequencies [numbers]
   (reduce + numbers))
 
-(defn- number-seq [input-reader]
-  (-> input-reader
-      line-seq
-      to-numbers))
-
-(defn puzzle1 [input-reader]
-  (sum-frequencies (number-seq input-reader)))
-
-(defn puzzle1-main []
-  (with-open [input-reader (io/reader "src/advent_of_clojure/2018/01_input.txt")]
-    (puzzle1 input-reader)))
+(defn puzzle1 []
+  (io/with-input "01_input.txt" sum-frequencies to-number))
 
 (deftest puzzle1-test
   (testing "dummy test"
-    (is (= 11
-           (puzzle1 (io/reader (java.io.StringReader. "+3\n-15\n+23"))))))
+    (is (= 11 (sum-frequencies [3 -15 23]))))
   (testing "real input"
-    (is (= 484
-           (puzzle1-main)))))
+    (is (= 484 (puzzle1)))))
 
 
 ;;; Puzzle 2
@@ -55,13 +44,8 @@
    [#{0} 0]
    (cycle numbers)))
 
-(defn puzzle2 [input-reader]
-  (let [numbers (number-seq input-reader)]
-    (first-repeating-frequency numbers)))
-
-(defn puzzle2-main []
-  (with-open [input-reader (io/reader "src/advent_of_clojure/2018/01_input.txt")]
-    (puzzle2 input-reader)))
+(defn puzzle2 []
+  (io/with-input "01_input.txt" first-repeating-frequency to-number))
 
 (deftest puzzle2-test
   (testing "dummy test"
@@ -71,8 +55,6 @@
     (is (= 0 (first-repeating-frequency [1 -1])))
     (is (= 10 (first-repeating-frequency [3 3 4 -2 -4])))
     (is (= 5 (first-repeating-frequency [-6 3 8 5 -6])))
-    (is (= 14 (first-repeating-frequency [7 7 -2 -7 -4])))
-    )
+    (is (= 14 (first-repeating-frequency [7 7 -2 -7 -4]))))
   (testing "real input"
-    (is (= 367
-           (puzzle2-main)))))
+    (is (= 367 (puzzle2)))))
