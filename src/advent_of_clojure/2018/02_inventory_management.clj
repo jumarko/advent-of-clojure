@@ -46,7 +46,7 @@
         (apply str))))
 
 (defn matching-ids
-  "For given ID find all other ids that 'match it' - that means they differe in exactly one character."
+  "For given ID find another id that 'match it' - that means they differ in exactly one character."
   [id other-ids]
   (first (filter (fn [id2] (and (= (count id) (count id2))
                                 (= (dec (count id)) (count (common-chars id id2)))))
@@ -54,7 +54,8 @@
                  )))
 
 (defn off-by-one-ids
-  "Finds all "
+  "In given set of ides find all ids that differ in exactly one character.
+  See `common-chars`."
   [ids]
   (->> ids
        (map (fn [id]
