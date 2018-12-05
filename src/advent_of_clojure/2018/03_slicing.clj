@@ -12,28 +12,43 @@
 ;;; Puzzle
 ;;; Find out how many square inches are within two or more claims
 
-(def testing-claim-str "#1 @ 108,350: 22x29")
+(def testing-claim-str "#10 @ 108,350: 22x29")
 
-(def claim-pattern #"#(\d)\s+@\s+(\d+),(\d+):\s+(\d+)x(\d+)*")
+(def claim-pattern #"#(\d+)\s+@\s+(\d+),(\d+):\s+(\d+)x(\d+)*")
 
 (defn str-to-claim [claim-str]
-  (let [[id left-distance right-distance width height] (rest (re-matches claim-pattern claim-str))]
-    {:id id
-     :left (Integer/valueOf left-distance)
-     :right (Integer/valueOf right-distance)
-     :width (Integer/valueOf width)
-     :height (Integer/valueOf height)}))
+  (let [[id left-distance right-distance width height :as data] (rest (re-matches claim-pattern claim-str))]
+    (when (seq data) 
+      {:id id
+       :left (Integer/valueOf left-distance)
+       :right (Integer/valueOf right-distance)
+       :width (Integer/valueOf width)
+       :height (Integer/valueOf height)})))
 
 (str-to-claim testing-claim-str)
-;; => {:id "1", :left 108, :right 350, :width 22, :height 29}
+;; => {:id "10", :left 108, :right 350, :width 22, :height 29}
 
-(defn overlapping-squares [claims])
+(defn overlapping-squares [claims]
+  (vec (take 20 claims)))
 
 (defn puzzle1 []
   (io/with-input "03_input.txt" overlapping-squares str-to-claim))
 
 (deftest puzzle1-test
   (testing "dummy test"
-    (is (= 11 (sum-frequencies [3 -15 23]))))
+    (is (= 11 (overlapping-squares [{:id 1 :left 1 :right 3 :width 4 :height 4}
+                                    {:id 2 :left 3 :right 1 :width 4 :height 4}
+                                    {:id 3 :left 5 :right 5 :width 2 :height 2}]))))
   (testing "real input"
     (is (= 484 (puzzle1)))))
+
+
+(comment
+
+  ;; first try to parse the input
+  ;; Regex seems to be a straightforward solution to this
+  ;; => see `claim-pattern`
+
+  (puzzle1)
+
+  )
