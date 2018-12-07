@@ -220,7 +220,8 @@
   "Expects the same structure as guard-sleeping-time and returns a single minute
   for which the guard has slept the most times."
   [sleeping-minutes]
-  (first (apply max-key val sleeping-minutes)))
+  (when-not (empty? sleeping-minutes)
+    (first (apply max-key val sleeping-minutes))))
 
 (most-frequent-sleeping-minute {39 1, 46 2, 54 1, 48 2, 50 1, 40 2, 36 1, 41 2, 43 2, 44 2, 51 1, 47 2, 45 3})
 ;; => 45
@@ -228,7 +229,7 @@
 (defn most-sleeping-guard [shifts]
   (let [guards-with-sleeping-minutes (sleeping-minutes shifts)
 
-        [guard-id minutes :as most-sleeping-guard]
+        [guard-id minutes :as _most-sleeping-guard]
         (apply max-key
                (fn [[guard-id mins]] (guard-sleeping-time mins))
                guards-with-sleeping-minutes)]
@@ -236,6 +237,7 @@
     [guard-id (most-frequent-sleeping-minute minutes)]))
 
 (most-sleeping-guard test-shifts-data)
+;; => [10 24]
 
 (defn puzzle1
   "Finds the ID of the guard sleepting the most minutes
@@ -244,11 +246,37 @@
   (let [[guard-id most-frequent-minute] (io/with-input "04_input.txt" most-sleeping-guard parse-shift)]
     (* guard-id most-frequent-minute)))
 
-
 (deftest puzzle1-test
   (testing "real data"
     (is (= 35623 (puzzle1)))))
 
+(defn guard-most-sleeping-in-the-same-minute [shifts]
+  (let [guards-with-sleeping-minutes (sleeping-minutes shifts)
+        [guard-id minutes]
+        (apply max-key
+               (fn [[guard-id mins]]
+                 (if-let [fm (most-frequent-sleeping-minute mins)]
+                   ;; get the actual frequency
+                   (get mins fm)
+                   ;; if guard haven't slept at all
+                   -1))
+               guards-with-sleeping-minutes)]
+    [guard-id (most-frequent-sleeping-minute minutes)]))
+
+(guard-most-sleeping-in-the-same-minute test-shifts-data)
+;; => [99 45]
+
+(defn puzzle2
+  "Finds the ID of the guard sleeping most in the same minute."
+  []
+  (let [[guard-id most-frequent-minute] (io/with-input "04_input.txt" guard-most-sleeping-in-the-same-minute parse-shift)]
+    (* guard-id most-frequent-minute)))
+
+(deftest puzzle2-test
+  (testing "real data"
+    (is (= 35623 (puzzle2)))))
+
+;;; tests for auxiliary functions
 (deftest test-most-sleeping-guard-minute
   (testing "Returns proper product of most sleeping guard's ID x the minute he's been sleeping the most."
     (is (= [10 24] (most-sleeping-guard test-shifts-data)))))
