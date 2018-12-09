@@ -1,7 +1,6 @@
 (ns advent-of-clojure.2018.05-alchemical-reduction
   "https://adventofcode.com/2018/day/5"
   (:require [advent-of-clojure.2018.input :as io]
-            [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]))
 
 ;;;; Suit's material is composed from extremely long polymers.
@@ -9,70 +8,51 @@
 ;;;; react with each other -> adjacent units of opposite polarity are destroyed;
 ;;;; e.g. `r` and `R` are units with the same type but opposite polarity.
 
-(defn fixed-point
-  "Finds a fixed point of given function,
-  that is a point at which the function keeps returning the same value"
-  [f start-value]
-  (let [iter (fn [old new]
-               (if (= old new)
-                 new
-                 (recur new (f new))))]
-    (iter f start-value)))
-
 (defn opposite-polarity?
   [a b]
   (and (not= a b)
-       (= (str/lower-case a) (str/lower-case b))))
+       (= (Character/toLowerCase a) (Character/toLowerCase b))))
 
-(defn polymer-reduction-1
-  "Performs a single polymer reduction."
-  [polymer]
-  (loop [polymer polymer
-         reduced-polymer ""]
-    (let [[curr-unit next-unit] polymer]
-      (if-not next-unit
-        (str reduced-polymer curr-unit)
-        (if (opposite-polarity? curr-unit next-unit)
-          (recur (subs polymer 2)
-                 reduced-polymer)
-          (recur (subs polymer 1)
-                 (str reduced-polymer curr-unit)))))))
+;; This is Mike Fikes' solution
+;; Dramatic reduction of complexity comes from traversing the whole collection only once
+;; and using `peek` and `pop`
+(defn add-unit [polymer unit]
+  (if (some-> (peek polymer) (opposite-polarity? unit))
+    (pop polymer)
+    (conj polymer unit)))
 
+(defn reduce-polymer [polymer]
+  (apply str (reduce
+              add-unit
+              []
+              polymer)))
 
-;; doesn't seem to be a good fit for reduce...
-#_(reduce
- (fn [[reduced-polymer prev-unit] curr-unit]
-   (cond
-     (nil? prev-unit)
-     [reduced-polymer curr-unit]
-
-     (opposite-polarity? prev-unit curr-unit)
-     [reduced-polymer nil]
-
-     :else
-     [(str reduced-polymer prev-unit) curr-unit]))
- nil
- "abBA")
-
-(defn polymer-reduction [polymer]
-  (fixed-point polymer-reduction-1 polymer))
+(defn read-input []
+  (-> (str io/common-file-prefix "05_input.txt")
+      slurp
+      clojure.string/trim-newline))
 
 (defn puzzle1 []
-  (io/with-input "05_input.txt" polymer-reduction))
+  (count (reduce-polymer (read-input))))
+
+#_(time (puzzle1))
+;; "Elapsed time: 700.105373 msecs"
 
 (deftest polymer-reduction-test
   (testing "units with same type but opposing polarity are destroyed"
     (is (empty?
-         (polymer-reduction "aA"))))
-  (testing "destroy repeated"
-    (is (empty?
-         (polymer-reduction "abBA"))))
+         (reduce-polymer "aA")))
+    (testing "destroy repeated"
+      (is (empty?
+           (reduce-polymer "abBA")))))
   (testing "nothing happens when adjacent units are of the same polarity"
     (is (= "aabAAB"
-           (polymer-reduction "aabAAB"))))
+           (reduce-polymer "aabAAB"))))
   (testing "more complex example of reduction"
     (is (= "dabCBAcaDA"
-           (polymer-reduction "dabAcCaCBAcCcaDA"))))
+           (reduce-polymer "dabAcCaCBAcCcaDA")))))
+
+(deftest puzzle1-test
   (testing "real input"
-    (is (= ""
+    (is (= 9202
            (puzzle1)))))
