@@ -190,6 +190,9 @@
                     {:time (LocalDateTime/parse "1518-11-03T00:29"),
                      :action :wakes-up,
                      :guard-id 10}])
+;; => {7 1, 20 1, 27 1, 24 2, 39 1, 46 1, 54 1, 15 1, 48 1, 50 1, 21 1, 31 1, 32 1, 40 1, 33 1, 13 1,
+;;     22 1, 36 1, 41 1, 43 1, 44 1, 6 1, 28 1, 51 1, 25 1, 34 1, 17 1, 12 1, 23 1, 47 1, 35 1, 19 1,
+;;     11 1, 9 1, 5 1, 14 1, 45 1, 53 1, 26 1, 16 1, 38 1, 30 1, 10 1, 18 1, 52 1, 42 1, 37 1, 8 1, 49 1}
 
 (defn sleeping-minutes
   "Counts sleeping minutes for each guard in the shifts.
@@ -207,8 +210,8 @@
   Expects a map where a key is a concrete minute and a value is the number of times the guard has slept
   during that minute"
   [guard-sleeping-minutes]
-  (reduce
-   (fn [acc [_minute cnt]]
+  (reduce-kv
+   (fn [acc _minute cnt]
      (+ acc cnt))
    0
    guard-sleeping-minutes))
