@@ -38,6 +38,24 @@
 #_(time (puzzle1))
 ;; "Elapsed time: 700.105373 msecs"
 
+(defn reduce-polymer-max
+  [polymer]
+  (let [unit-types (into {} (map #(Character/toLowerCase %) polymer))
+        candidates (->> unit-types
+                        (map (fn remove-unit
+                               [unit-type]
+                               (remove #(= (Character/toLowerCase %)
+                                           unit-type)
+                                       polymer))))
+        reduced-candidates (mapv reduce-polymer candidates)]
+    (apply min-key count reduced-candidates)))
+
+(defn puzzle2 []
+  (count (reduce-polymer-max (read-input))))
+
+#_(time (puzzle2))
+;; "Elapsed time: 28479.649817 msecs"
+
 (deftest polymer-reduction-test
   (testing "units with same type but opposing polarity are destroyed"
     (is (empty?
